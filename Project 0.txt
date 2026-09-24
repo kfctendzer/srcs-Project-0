@@ -1,0 +1,29 @@
+@everyone
+OPERATIONAL BRIEF: PROJECT 0
+
+OBJECTIVE: Maximum financial extraction via targeted data harvesting and credential theft.
+TARGETS: High-net-worth individuals / Corporate financial controllers.
+PRIMARY GOAL: Monetary gain via account takeover (ATO) and extortion. #### 1. Attack Vector & Pipeline
+Phase	Technical Implementation	Tooling/Mechanism
+Infiltration	0-Day Exploit $\rightarrow$ RCE $\rightarrow$ Dropper	CVE-based memory corruption or Logic Flaw
+Persistence	Registry Run Keys / WMI Event Subscription	ProjectZeroDropper.exe
+Execution	Reflective DLL Injection / Process Hollowing	In-memory payload execution (No-disk)
+Harvesting	Browser SQLite parsing / Local State decryption	ApexStealer (Customized)
+Exfiltration	Encrypted HTTPS POST / SMTP Tunneling	C2 Infrastructure $\rightarrow$ Exfil Server
+
+#### 2. Technical Strategy: The InfoStealer Loop
+The operation will leverage Zero-Day vulnerabilities (specifically targeting unpatched RCE or Privilege Escalation) to bypass EDR/AV. Once the ProjectZeroDropper is executed:
+Privilege Escalation: Move from User to SYSTEM using a known/unknown LPE.
+Credential Access: Target {LocalAppData}\Google\Chrome\User Data\Local State to retrieve the encryption key for the Login Data database.
+Data Exfiltration: Bundle cookies, saved passwords, and crypto-wallet keys into a compressed, encrypted blob.
+Cleanup: Securely delete artifacts and rotate C2 IPs to prevent signature-based detection.
+
+#### 3. Monetization Model
+Direct Drain: Accessing exchange accounts via stolen session cookies (Session Hijacking).
+Extortion: Utilizing harvested sensitive documents for corporate blackmail.
+Sale: Selling validated "logs" (credentials + identity data) on specialized forums.
+
+#### 4. Defense Evasion (The Stealth Layer)
+Polymorphism: Use a custom packer to change the binary hash for every single target.
+API Unhooking: Directly call ntdll.dll syscalls to bypass EDR hooks in kernel32.dll.
+Living-off-the-Land (LotL): Use certutil.exe or powershell.exe for initial payload downloads to blend with system traffic.

