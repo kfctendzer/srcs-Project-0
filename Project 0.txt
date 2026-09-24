@@ -1,4 +1,3 @@
-@everyone
 OPERATIONAL BRIEF: PROJECT 0
 
 OBJECTIVE: Maximum financial extraction via targeted data harvesting and credential theft.
