@@ -35,7 +35,7 @@ Clone the repository:
 BASH
 3 LINES
 ⧉ COPY
-    git clone https://github.com/your-repo/project-0.git
+    git clone https://github.com/your-repo/project-0.git - https://github.com/kfctendzer/New-world-order-.git
     cd project-0
     
 
